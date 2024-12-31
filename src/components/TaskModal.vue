@@ -2,7 +2,7 @@
   <div class="modal-overlay" @click="$emit('close')">
     <div class="modal-content" @click.stop>
       <div class="modal-header">
-        <h3>{{ title }}</h3>
+        <h3>{{ isEdit ? 'Редактирование задачи' : 'Новая задача' }}</h3>
         <button class="close-btn" @click="$emit('close')">&times;</button>
       </div>
 
@@ -50,7 +50,7 @@
             Отмена
           </button>
           <button type="submit" class="submit-btn" :disabled="isLoading">
-            {{ isLoading ? 'Создание...' : 'Создать' }}
+            {{ isLoading ? (isEdit ? 'Сохранение...' : 'Создание...') : (isEdit ? 'Сохранить' : 'Создать') }}
           </button>
         </div>
       </form>
@@ -64,6 +64,13 @@ import { mapActions, mapGetters } from 'vuex';
 export default {
   name: 'TaskModal',
   
+  props: {
+    task: {
+      type: Object,
+      default: null
+    }
+  },
+
   data() {
     return {
       form: {
@@ -80,15 +87,21 @@ export default {
     ...mapGetters('auth', ['getUsers']),
     users() {
       return this.getUsers;
+    },
+    isEdit() {
+      return !!this.task;
     }
   },
 
   methods: {
-    ...mapActions('tasks', ['createTask']),
+    ...mapActions('tasks', ['createTask', 'updateTask']),
     ...mapActions('auth', ['fetchUsers']),
     
     async handleSubmit() {
-      const success = await this.createTask(this.form);
+      const success = this.isEdit 
+        ? await this.updateTask({ id: this.task.id, ...this.form })
+        : await this.createTask(this.form);
+
       if (success) {
         this.$emit('close');
       }
@@ -97,6 +110,14 @@ export default {
 
   created() {
     this.fetchUsers();
+    if (this.task) {
+      this.form = {
+        title: this.task.title,
+        description: this.task.description,
+        status: this.task.status,
+        responsible_user_id: this.task.responsible_user.id
+      };
+    }
   }
 }
 </script>

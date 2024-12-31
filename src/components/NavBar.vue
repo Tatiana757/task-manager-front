@@ -2,7 +2,7 @@
   <nav class="navbar">
     <div class="navbar-content">
       <div class="navbar-brand">
-        <img src="@/assets/logo.png" alt="Logo" class="logo">
+        <img src="@/assets/logo.svg" alt="Logo" class="logo">
         <span class="brand-name">Task Manager</span>
       </div>
 

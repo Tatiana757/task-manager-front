@@ -91,6 +91,34 @@ export default {
       } finally {
         commit('SET_LOADING', false);
       }
+    },
+
+    async updateTask({ commit, rootState, dispatch }, taskData) {
+      commit('SET_LOADING', true);
+      commit('SET_ERROR', null);
+      
+      try {
+        const response = await fetch(`${API_URL}/tasks/${taskData.id}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${rootState.auth.token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(taskData)
+        });
+
+        if (!response.ok) {
+          throw new Error('Ошибка при обновлении задачи');
+        }
+
+        await dispatch('fetchTasks');
+        return true;
+      } catch (error) {
+        commit('SET_ERROR', error.message);
+        return false;
+      } finally {
+        commit('SET_LOADING', false);
+      }
     }
   },
 

@@ -25,7 +25,8 @@
         <div class="column-content">
           <div v-for="task in getTasksByStatus('pending')" 
                :key="task.id" 
-               class="task-card">
+               class="task-card"
+               @click="openEditModal(task)">
             <h3>{{ task.title }}</h3>
             <p class="description">{{ task.description }}</p>
             <div class="task-info">
@@ -49,7 +50,8 @@
         <div class="column-content">
           <div v-for="task in getTasksByStatus('in_progress')" 
                :key="task.id" 
-               class="task-card">
+               class="task-card"
+               @click="openEditModal(task)">
             <h3>{{ task.title }}</h3>
             <p class="description">{{ task.description }}</p>
             <div class="task-info">
@@ -73,7 +75,8 @@
         <div class="column-content">
           <div v-for="task in getTasksByStatus('completed')" 
                :key="task.id" 
-               class="task-card">
+               class="task-card"
+               @click="openEditModal(task)">
             <h3>{{ task.title }}</h3>
             <p class="description">{{ task.description }}</p>
             <div class="task-info">
@@ -91,7 +94,8 @@
 
     <TaskModal 
       v-if="showModal" 
-      @close="showModal = false"
+      :task="selectedTask"
+      @close="closeModal"
     />
   </div>
 </template>
@@ -109,7 +113,8 @@ export default {
 
   data() {
     return {
-      showModal: false
+      showModal: false,
+      selectedTask: null
     }
   },
 
@@ -136,6 +141,16 @@ export default {
         month: '2-digit',
         year: '2-digit'
       });
+    },
+
+    openEditModal(task) {
+      this.selectedTask = task;
+      this.showModal = true;
+    },
+
+    closeModal() {
+      this.showModal = false;
+      this.selectedTask = null;
     }
   },
 
@@ -273,6 +288,7 @@ export default {
 .task-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
 }
 
 .task-card h3 {
