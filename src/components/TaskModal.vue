@@ -2,7 +2,7 @@
   <div class="modal-overlay" @click="$emit('close')">
     <div class="modal-content" @click.stop>
       <div class="modal-header">
-        <h3>{{ isEdit ? 'Редактирование задачи' : 'Новая задача' }}</h3>
+        <h3>{{ getModalTitle }}</h3>
         <button class="close-btn" @click="$emit('close')">&times;</button>
       </div>
 
@@ -13,6 +13,7 @@
             v-model="form.title" 
             type="text" 
             required
+            :readonly="isEdit && !canEditDetails"
             placeholder="Введите название задачи"
           >
         </div>
@@ -22,11 +23,12 @@
           <textarea 
             v-model="form.description" 
             rows="4"
+            :readonly="isEdit && !canEditDetails"
             placeholder="Введите описание задачи"
           ></textarea>
         </div>
 
-        <div class="form-group">
+        <div class="form-group" v-if="!isEdit || canChangeStatus">
           <label>Статус:</label>
           <select v-model="form.status">
             <option value="pending">Новая</option>
@@ -35,7 +37,7 @@
           </select>
         </div>
 
-        <div class="form-group">
+        <div class="form-group" v-if="!isEdit || canChangeResponsible">
           <label>Ответственный:</label>
           <select v-model="form.responsible_user_id" required>
             <option value="" disabled>Выберите ответственного</option>
@@ -49,8 +51,13 @@
           <button type="button" class="cancel-btn" @click="$emit('close')">
             Отмена
           </button>
-          <button type="submit" class="submit-btn" :disabled="isLoading">
-            {{ isLoading ? (isEdit ? 'Сохранение...' : 'Создание...') : (isEdit ? 'Сохранить' : 'Создать') }}
+          <button 
+            v-if="showSaveButton"
+            type="submit" 
+            class="submit-btn" 
+            :disabled="isLoading"
+          >
+            {{ getSaveButtonText }}
           </button>
         </div>
       </form>
@@ -60,6 +67,7 @@
 
 <script>
 import { mapActions, mapGetters } from 'vuex';
+import { canEditTaskDetails, canChangeTaskStatus, canChangeTaskResponsible } from '@/helpers/permissions';
 
 export default {
   name: 'TaskModal',
@@ -84,12 +92,41 @@ export default {
 
   computed: {
     ...mapGetters('tasks', ['isLoading']),
-    ...mapGetters('auth', ['getUsers']),
+    ...mapGetters('auth', ['getUsers', 'getUser', 'getPermissions']),
     users() {
       return this.getUsers;
     },
     isEdit() {
       return !!this.task;
+    },
+    canEditDetails() {
+      if (!this.task) return true;
+      return canEditTaskDetails(this.getPermissions);
+    },
+    canChangeStatus() {
+      if (!this.task) return true;
+      return canChangeTaskStatus(this.getPermissions);
+    },
+    canChangeResponsible() {
+      if (!this.task) return true;
+      return canChangeTaskResponsible(this.getPermissions);
+    },
+    getModalTitle() {
+      if (!this.isEdit) return 'Новая задача';
+      if (this.canEditDetails || this.canChangeStatus || this.canChangeResponsible) {
+        return 'Редактирование задачи';
+      }
+      return 'Просмотр задачи';
+    },
+    showSaveButton() {
+      if (!this.isEdit) return true;
+      return this.canEditDetails || this.canChangeStatus || this.canChangeResponsible;
+    },
+    getSaveButtonText() {
+      if (this.isLoading) {
+        return this.isEdit ? 'Сохранение...' : 'Создание...';
+      }
+      return this.isEdit ? 'Сохранить' : 'Создать';
     }
   },
 
@@ -98,12 +135,20 @@ export default {
     ...mapActions('auth', ['fetchUsers']),
     
     async handleSubmit() {
-      const success = this.isEdit 
-        ? await this.updateTask({ id: this.task.id, ...this.form })
-        : await this.createTask(this.form);
+      if (this.isEdit) {
+        const success = await this.updateTask({ 
+          id: this.task.id, 
+          ...this.form 
+        });
 
-      if (success) {
-        this.$emit('close');
+        if (success) {
+          this.$emit('close');
+        }
+      } else {
+        const success = await this.createTask(this.form);
+        if (success) {
+          this.$emit('close');
+        }
       }
     }
   },

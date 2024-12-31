@@ -31,7 +31,6 @@ const router = createRouter({
   routes
 })
 
-// Защита маршрутов
 router.beforeEach((to, from, next) => {
   const isAuthenticated = store.getters['auth/isAuthenticated']
   

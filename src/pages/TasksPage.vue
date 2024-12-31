@@ -2,7 +2,7 @@
   <div class="tasks-container">
     <div class="tasks-header">
       <h1>Задачи</h1>
-      <button class="add-task-btn" @click="showModal = true">
+      <button class="add-task-btn" @click="showModal = true" v-if="canCreate">
         <i class="fas fa-plus"></i> Новая задача
       </button>
     </div>
@@ -103,6 +103,7 @@
 <script>
 import { mapActions, mapGetters } from 'vuex';
 import TaskModal from '@/components/TaskModal.vue';
+import { canCreateTask } from '@/helpers/permissions';
 
 export default {
   name: 'TasksPage',
@@ -120,11 +121,15 @@ export default {
 
   computed: {
     ...mapGetters('tasks', ['getTasks', 'isLoading', 'getError', 'getPagination']),
+    ...mapGetters('auth', ['getPermissions', 'getUser']),
     tasks() {
       return this.getTasks;
     },
     error() {
       return this.getError;
+    },
+    canCreate() {
+      return canCreateTask(this.getPermissions);
     }
   },
 

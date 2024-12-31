@@ -6,6 +6,8 @@ export default {
   state: {
     token: localStorage.getItem('token') || null,
     user: JSON.parse(localStorage.getItem('user')) || null,
+    role: localStorage.getItem('role') || null,
+    permissions: JSON.parse(localStorage.getItem('permissions')) || null,
     loading: false,
     error: null,
     users: []
@@ -17,6 +19,12 @@ export default {
     },
     SET_USER(state, user) {
       state.user = user;
+    },
+    SET_ROLE(state, role) {
+      state.role = role;
+    },
+    SET_PERMISSIONS(state, permissions) {
+      state.permissions = permissions;
     },
     SET_LOADING(state, loading) {
       state.loading = loading;
@@ -54,20 +62,28 @@ export default {
 
         const data = await response.json();
         
-        if (data.token) {
-          localStorage.setItem('token', data.token);
+        if (data.user.token) {
+          const user = data.user;
+          localStorage.setItem('token', user.token);
           localStorage.setItem('user', JSON.stringify({
-            id: data.id,
-            name: data.name,
-            login: data.login
+            id: user.id,
+            name: user.name,
+            login: user.login
           }));
           
-          commit('SET_TOKEN', data.token);
+          commit('SET_TOKEN', user.token);
           commit('SET_USER', {
-            id: data.id,
-            name: data.name,
-            login: data.login
+            id: user.id,
+            name: user.name,
+            login: user.login
           });
+
+          localStorage.setItem('role', data.role);
+          localStorage.setItem('permissions', JSON.stringify(data.permissions));
+
+          commit('SET_ROLE', data.role);
+          commit('SET_PERMISSIONS', data.permissions);
+
           return true;
         }
       } catch (error) {
@@ -124,6 +140,8 @@ export default {
   getters: {
     isAuthenticated: state => !!state.token,
     getUser: state => state.user,
+    getRole: state => state.role,
+    getPermissions: state => state.permissions,
     getError: state => state.error,
     isLoading: state => state.loading,
     getUsers: state => state.users
