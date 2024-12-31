@@ -29,7 +29,7 @@
         <div class="form-group">
           <label>Статус:</label>
           <select v-model="form.status">
-            <option value="new">Новая</option>
+            <option value="pending">Новая</option>
             <option value="in_progress">В работе</option>
             <option value="completed">Завершена</option>
           </select>
@@ -69,7 +69,7 @@ export default {
       form: {
         title: '',
         description: '',
-        status: 'new',
+        status: 'pending',
         responsible_user_id: ''
       }
     }

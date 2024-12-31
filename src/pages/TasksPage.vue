@@ -18,12 +18,12 @@
     <div v-else class="kanban-board">
       <!-- Колонка "Новые" -->
       <div class="kanban-column">
-        <div class="column-header new">
+        <div class="column-header pending">
           <h2>Новые</h2>
-          <span class="task-count">{{ getTasksByStatus('new').length }}</span>
+          <span class="task-count">{{ getTasksByStatus('pending').length }}</span>
         </div>
         <div class="column-content">
-          <div v-for="task in getTasksByStatus('new')" 
+          <div v-for="task in getTasksByStatus('pending')" 
                :key="task.id" 
                class="task-card">
             <h3>{{ task.title }}</h3>
@@ -221,7 +221,7 @@ export default {
   margin: 0;
 }
 
-.column-header.new {
+.column-header.pending {
   color: #2b6cb0;
 }
 
