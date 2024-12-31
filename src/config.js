@@ -1,0 +1,1 @@
+export const API_URL = 'http://task-manager/api/v1'; 
