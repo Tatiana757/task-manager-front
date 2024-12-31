@@ -7,7 +7,8 @@ export default {
     token: localStorage.getItem('token') || null,
     user: JSON.parse(localStorage.getItem('user')) || null,
     loading: false,
-    error: null
+    error: null,
+    users: []
   },
 
   mutations: {
@@ -27,6 +28,9 @@ export default {
       state.token = null;
       state.user = null;
       state.error = null;
+    },
+    SET_USERS(state, users) {
+      state.users = users;
     }
   },
 
@@ -94,6 +98,26 @@ export default {
         localStorage.removeItem('user');
         commit('CLEAR_AUTH');
       }
+    },
+
+    async fetchUsers({ commit, state }) {
+      try {
+        const response = await fetch(`${API_URL}/users`, {
+          headers: {
+            'Authorization': `Bearer ${state.token}`,
+            'Content-Type': 'application/json',
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Ошибка получения списка пользователей');
+        }
+
+        const data = await response.json();
+        commit('SET_USERS', data.data);
+      } catch (error) {
+        console.error('Ошибка при получении пользователей:', error);
+      }
     }
   },
 
@@ -101,6 +125,7 @@ export default {
     isAuthenticated: state => !!state.token,
     getUser: state => state.user,
     getError: state => state.error,
-    isLoading: state => state.loading
+    isLoading: state => state.loading,
+    getUsers: state => state.users
   }
 }; 

@@ -38,6 +38,7 @@
         <div class="form-group">
           <label>Ответственный:</label>
           <select v-model="form.responsible_user_id" required>
+            <option value="" disabled>Выберите ответственного</option>
             <option v-for="user in users" :key="user.id" :value="user.id">
               {{ user.name }}
             </option>
@@ -76,13 +77,15 @@ export default {
 
   computed: {
     ...mapGetters('tasks', ['isLoading']),
-    title() {
-      return 'Новая задача';
+    ...mapGetters('auth', ['getUsers']),
+    users() {
+      return this.getUsers;
     }
   },
 
   methods: {
     ...mapActions('tasks', ['createTask']),
+    ...mapActions('auth', ['fetchUsers']),
     
     async handleSubmit() {
       const success = await this.createTask(this.form);
@@ -90,6 +93,10 @@ export default {
         this.$emit('close');
       }
     }
+  },
+
+  created() {
+    this.fetchUsers();
   }
 }
 </script>
